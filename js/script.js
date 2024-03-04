@@ -3,22 +3,29 @@ var currentSelectionId = 0;
 let currentData = [];
 let getDataBYid = {};
 let page = 1;
-let pageLimit = 10;
+let pageLimit = document.getElementById("pageInput").value;
 let paginationContent;
 var BaseUrl = new URL(
   "https://65e19ca3a8583365b316d3e2.mockapi.io/api/v1/CRUDDemo"
 );
 let apiLength;
 let pageLinks;
+let lastPage;
+let prevBtn;
+let nextBtn;
+let totalEnquiries;
+let totalMaleEnquiries;
+let totalFemaleEnquiries;
+let summaryApiData;
+let j = 1;
+let filterToggle = true;
 
-$("#staticBackdrop").click(() => {
-  if (!currentSelectionId) {
-    $("#addLabel").text("Add Employee");
-    $("#submitBtn")
-      .removeClass("btn-success")
-      .addClass("btn-primary")
-      .text("Add");
-  }
+$("#openModal").click(() => {
+  $("#addLabel").text("Add Employee");
+  $("#submitBtn")
+    .removeClass("btn-success")
+    .addClass("btn-primary")
+    .text("Add");
 });
 
 $(".btnClose").click(() => {
@@ -61,6 +68,14 @@ $("#myForm").submit((e) => {
 
     $("#myForm").trigger("reset");
     $("#staticBackdrop").modal("hide");
+    if (!currentSelectionId) {
+      $("#addLabel").text("Edit Employee");
+      $("#addLabel").text("Add Employee");
+      $("#submitBtn")
+        .removeClass("btn-success")
+        .addClass("btn-primary")
+        .text("Add");
+    }
   } else {
     return false;
   }
@@ -72,67 +87,54 @@ function getApiLength() {
     url: "https://65e19ca3a8583365b316d3e2.mockapi.io/api/v1/CRUDDemo",
     dataType: "json",
     beforeSend: function (e) {
-      // $("#content").hide();
+      $("#showAllData").hide();
       $("#loader").show();
     },
     complete: function (e) {
       $("#loader").hide();
-      // $("#content").show();
+      $("#showAllData").show();
     },
     success: function (response) {
-      apiLength = response.length;
+      $(".summaryList").html("");
+      summaryApiData = response;
+
+      apiLength = summaryApiData.length;
+      totalEnquiries = $("#enquiry > option").length - 1;
+      totalMaleEnquiries = summaryApiData.filter(
+        (x) => x.gender === "Male"
+      ).length;
+      totalFemaleEnquiries = summaryApiData.filter(
+        (x) => x.gender === "Female"
+      ).length;
+
+      let summaryData = "";
+      summaryData += `
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <label class="summaryLabel">Total Entry : </label>
+          <span class="text-muted">${apiLength}</span>
+        </div>
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <label class="summaryLabel">Total Enquiries : </label>
+          <span class="text-muted">${totalEnquiries}</span>
+        </div>
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <label class="summaryLabel">Total Male Enquiries : </label>
+          <span class="text-muted">${totalMaleEnquiries}</span>
+        </div>
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <label class="summaryLabel">Total Female Enquiries: </label>
+          <span class="text-muted">${totalFemaleEnquiries}</span>
+        </div>
+        `;
+
+      $(".summaryList").append(summaryData);
     },
     error: function (err) {
       console.log(err);
     },
   });
 }
-
 getApiLength();
-
-function pagination() {
-  $(".leftPart").html("");
-  BaseUrl.searchParams.delete("page");
-  BaseUrl.searchParams.delete("limit", pageLimit);
-
-  BaseUrl.searchParams.append("page", page);
-  BaseUrl.searchParams.append("limit", pageLimit);
-
-  paginationContent = "";
-  paginationContent += `
-        <nav aria-label="..." class="float-end">
-        <ul class="pagination">
-          <li class="page-item">
-            <a class="page-link" href="#"
-              >Previous</a
-            >
-          </li>`;
-  //Math.ceil(currentData.length / pageLimit)
-  for (let i = 1; i <= Math.ceil(apiLength / pageLimit); i++) {
-    paginationContent += `<li class="pageLink page-item" onclick=currentPage(${i}) ><a class="page-link" href="#">${i}</a></li>`;
-  }
-
-  paginationContent += `
-          <li class="page-item">
-            <a class="page-link" href="#">Next</a>
-          </li>
-          </ul>
-          </nav>`;
-
-  $(".leftPart").append(paginationContent);
-  pageLinks = document.querySelectorAll(".pageLink");
-  if (pageLinks && page === 1) {
-    pageLinks[0].classList.add("active");
-  } else {
-    for (let i = 0; i < pageLinks.length; i++) {
-      pageLinks[i].classList.remove("active");
-      if (i === page - 1) {
-        pageLinks[page - 1].classList.add("active");
-      }
-    }
-  }
-  getData();
-}
 
 function currentPage(index) {
   page = index;
@@ -140,18 +142,125 @@ function currentPage(index) {
   pagination();
 }
 
+function previousPage() {
+  page -= 1;
+  if (page < 1) {
+    page += 1;
+    return 0;
+  }
+  pagination();
+}
+
+function nextPage() {
+  page += 1;
+  if (page > lastPage) {
+    page -= 1;
+    return 0;
+  }
+  pagination();
+}
+
+function pagination() {
+  $(".leftPart").html("");
+  BaseUrl.searchParams.delete("page");
+  BaseUrl.searchParams.delete("limit");
+
+  BaseUrl.searchParams.append("page", page);
+  BaseUrl.searchParams.append("limit", pageLimit);
+  lastPage = Math.ceil(apiLength / pageLimit);
+  paginationContent = "";
+  paginationContent += `
+        <nav aria-label="..." class="float-end">
+        <ul class="pagination">
+          <li class="prevBtn page-item" onclick=previousPage()>
+            <a class="page-link" href="#"
+              >Previous</a
+            >
+          </li>`;
+  if (lastPage) {
+    for (let i = 1; i <= Math.ceil(apiLength / pageLimit); i++) {
+      paginationContent += `<li class="pageLink page-item" onclick=currentPage(${i}) ><a class="page-link" href="#">${i}</a></li>`;
+    }
+  }
+
+  paginationContent += `
+          <li class="nextBtn page-item" onclick=nextPage()>
+            <a class="page-link" href="#">Next</a>
+          </li>
+          </ul>
+          </nav>`;
+
+  $(".leftPart").append(paginationContent);
+  prevBtn = document.querySelector(".prevBtn");
+  nextBtn = document.querySelector(".nextBtn");
+  pageLinks = document.querySelectorAll(".pageLink");
+  if (pageLinks && page === 1) {
+    let firstPage = pageLinks[0];
+    firstPage?.classList.add("active");
+    prevBtn.classList.add("disabled");
+  } else if (lastPage === page) {
+    nextBtn.classList.add("disabled");
+    pageLinks[pageLinks.length - 1].classList.add("active");
+  } else {
+    for (let i = 0; i < pageLinks.length; i++) {
+      pageLinks[i].classList.remove("active");
+      if (i === page - 1) {
+        pageLinks[i].classList.add("active");
+      }
+    }
+  }
+  getData();
+}
+
+document.getElementById("pageInput").addEventListener("change", (e) => {
+  pageLimit = e.target.value;
+  page = 1;
+  // setTimeout(() => {
+  pagination();
+  // }, 1500);
+});
+
+const inputElement = document.getElementById("searchInput");
+// let previousValue = "";
+// inputElement.addEventListener("input", () => {
+//   previousValue = this.value;
+// });
+
+// inputElement.addEventListener("input", (e) => {
+//   let newValue = e.target.value;
+//   BaseUrl.searchParams.delete("search");
+
+//   BaseUrl.searchParams.append("search", newValue);
+//   getData();
+//   pagination();
+// });
+
+$("#searchInput").change(function () {
+  console.log($("#searchInput").val());
+  BaseUrl.searchParams.delete("search");
+
+  BaseUrl.searchParams.append("search", $("#searchInput").val());
+  getData();
+  page = 1;
+  pagination();
+});
+
+// $("#searchInput").focusout(function () {
+//   $(this).focus();
+// });
+
 function getData() {
   $.ajax({
     type: "GET",
     url: BaseUrl,
     dataType: "json",
     beforeSend: function (e) {
-      // $("#content").hide();
+      $("#showAllData").hide();
       $("#loader").show();
     },
     complete: function (e) {
       $("#loader").hide();
-      // $("#content").show();
+      $("#showAllData").show();
     },
     success: function (response) {
       currentData = response;
@@ -177,9 +286,9 @@ function getData() {
               <span
                 class="d-flex align-items-center gap-2"
               >
-                <i class="fa-solid fa-pen" data-bs-toggle="modal"
+                <i class="fa-solid fa-pen box-shadow-xl" data-bs-toggle="modal"
                 data-bs-target="#staticBackdrop" onclick=patchData(${item.id})></i>
-                <i class="fa-solid fa-trash" data-bs-toggle="modal"
+                <i class="fa-solid fa-trash box-shadow-xl" data-bs-toggle="modal"
                 data-bs-target="#staticBackdrop2" onclick=removeData(${item.id})></i>
               </span>
             </td>
@@ -188,8 +297,19 @@ function getData() {
         });
 
         $("#tbody").append(data);
+
+        getApiLength();
+
         if (response && response.length > 10) {
-          pagination();
+          // setTimeout(() => {
+          if (j > 0) {
+            pagination();
+            getApiLength();
+            j -= 1;
+          }
+          j += 1;
+
+          // }, 1000);
         }
       } else {
         $("#tbody").append(noFound);
@@ -203,6 +323,126 @@ function getData() {
 
 getData();
 
+function nameFilter() {
+  BaseUrl.searchParams.delete("sortBy");
+  BaseUrl.searchParams.delete("order");
+
+  if (filterToggle) {
+    BaseUrl.searchParams.append("sortBy", "name");
+    BaseUrl.searchParams.append("order", "asc");
+
+    filterToggle = !filterToggle;
+  } else {
+    BaseUrl.searchParams.append("sortBy", "name");
+    BaseUrl.searchParams.append("order", "desc");
+
+    filterToggle = !filterToggle;
+  }
+
+  page = 1;
+  getData();
+}
+
+function emailFilter() {
+  BaseUrl.searchParams.delete("sortBy");
+  BaseUrl.searchParams.delete("order");
+
+  if (filterToggle) {
+    BaseUrl.searchParams.append("sortBy", "email");
+    BaseUrl.searchParams.append("order", "asc");
+
+    filterToggle = !filterToggle;
+  } else {
+    BaseUrl.searchParams.append("sortBy", "email");
+    BaseUrl.searchParams.append("order", "desc");
+
+    filterToggle = !filterToggle;
+  }
+
+  page = 1;
+  getData();
+}
+
+function phoneFilter() {
+  BaseUrl.searchParams.delete("sortBy");
+  BaseUrl.searchParams.delete("order");
+
+  if (filterToggle) {
+    BaseUrl.searchParams.append("sortBy", "phone");
+    BaseUrl.searchParams.append("order", "asc");
+
+    filterToggle = !filterToggle;
+  } else {
+    BaseUrl.searchParams.append("sortBy", "phone");
+    BaseUrl.searchParams.append("order", "desc");
+
+    filterToggle = !filterToggle;
+  }
+
+  page = 1;
+  getData();
+}
+
+function genderFilter() {
+  BaseUrl.searchParams.delete("sortBy");
+  BaseUrl.searchParams.delete("order");
+
+  if (filterToggle) {
+    BaseUrl.searchParams.append("sortBy", "gender");
+    BaseUrl.searchParams.append("order", "asc");
+
+    filterToggle = !filterToggle;
+  } else {
+    BaseUrl.searchParams.append("sortBy", "gender");
+    BaseUrl.searchParams.append("order", "desc");
+
+    filterToggle = !filterToggle;
+  }
+
+  page = 1;
+  getData();
+}
+
+function enquiryFilter() {
+  BaseUrl.searchParams.delete("sortBy");
+  BaseUrl.searchParams.delete("order");
+
+  if (filterToggle) {
+    BaseUrl.searchParams.append("sortBy", "enquiry");
+    BaseUrl.searchParams.append("order", "asc");
+
+    filterToggle = !filterToggle;
+  } else {
+    BaseUrl.searchParams.append("sortBy", "enquiry");
+    BaseUrl.searchParams.append("order", "desc");
+
+    filterToggle = !filterToggle;
+  }
+
+  page = 1;
+  getData();
+}
+
+function messageFilter() {
+  BaseUrl.searchParams.delete("sortBy");
+  BaseUrl.searchParams.delete("order");
+
+  if (filterToggle) {
+    BaseUrl.searchParams.append("sortBy", "message");
+    BaseUrl.searchParams.append("order", "asc");
+
+    filterToggle = !filterToggle;
+  } else {
+    BaseUrl.searchParams.append("sortBy", "message");
+    BaseUrl.searchParams.append("order", "desc");
+
+    filterToggle = !filterToggle;
+  }
+
+  page = 1;
+  getData();
+}
+
 let name;
 let email;
 let phone;
@@ -215,8 +455,7 @@ function getFormData() {
     email: $("#email").val(),
     phone: $("#phone").val(),
     gender: $("input[type='radio'][name='gender']:checked").val(),
-
-    enquiry: $("#enquiry option:selected").text(),
+    enquiry: $("#enquiry").find(":selected").val(),
     message: $("#message").val(),
   };
 }
@@ -229,13 +468,13 @@ function postData() {
     data: formData,
     dataType: "json",
     beforeSend: function (e) {
-      // $("#content").hide();
+      $("#showAllData").hide();
 
       $("#loader").show();
     },
     complete: function (e) {
       $("#loader").hide();
-      // $("#content").show();
+      $("#showAllData").show();
     },
     success: function (response) {
       getData();
@@ -254,13 +493,13 @@ function updateData() {
     data: formData,
     dataType: "json",
     beforeSend: function (e) {
-      // $("#content").hide();
+      $("#showAllData").hide();
 
       $("#loader").show();
     },
     complete: function (e) {
       $("#loader").hide();
-      // $("#content").show();
+      $("#showAllData").show();
     },
     success: function (response) {
       getData();
@@ -273,17 +512,20 @@ function updateData() {
   });
 }
 
+function showModalHeader() {
+  $("#addLabel").text("Edit Employee");
+  $("#submitBtn")
+    .removeClass("btn-primary")
+    .addClass("btn-success")
+    .text("Save");
+}
+
 function patchData(id) {
   getDataBYid = currentData.find((f) => f.id == id);
   if (getDataBYid) {
     currentSelectionId = getDataBYid.id;
-    if (currentSelectionId) {
-      $("#addLabel").text("Edit Employee");
-      $("#submitBtn")
-        .removeClass("btn-primary")
-        .addClass("btn-success")
-        .text("Save");
-    }
+
+    showModalHeader();
     $("#name").val(getDataBYid.name);
     $("#email").val(getDataBYid.email);
     $("#phone").val(getDataBYid.phone);
@@ -311,13 +553,13 @@ function deleteRecord(id) {
     url: `https://65e19ca3a8583365b316d3e2.mockapi.io/api/v1/CRUDDemo/${id}`,
     dataType: "json",
     beforeSend: function (e) {
-      // $("#content").hide();
+      $("#showAllData").hide();
 
       $("#loader").show();
     },
     complete: function (e) {
       $("#loader").hide();
-      // $("#content").show();
+      $("#showAllData").show();
     },
     success: function (response) {
       getData();
@@ -400,7 +642,6 @@ $("#phone").keyup(function () {
 });
 
 $("#gender").keyup(function () {
-  //   var checkbox_value = $("#gender:checked").val();
   var checkbox_value = $("input[type='radio'][name='gender']:checked");
 
   if (!checkbox_value) {

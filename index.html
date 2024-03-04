@@ -29,10 +29,11 @@
     <div class="enquirySection container-fluid p-5">
       <h1 class="text-center mb-4 h-6">Enquiry list</h1>
 
-      <div class="row mb-2">
+      <div id="showAllData" class="row mb-2">
         <div class="col-md-9 d-flex">
           <div class="d-flex align-items-center gap-4 me-auto">
             <i
+              id="openModal"
               class="fa-solid fa-plus"
               data-bs-toggle="modal"
               data-bs-target="#staticBackdrop"
@@ -69,15 +70,58 @@
             <table class="table table-hover table-striped border box-shadow-xl">
               <thead class="bg-dark text-white">
                 <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Phone</th>
-                  <th>Gender</th>
-                  <th>Enquiry</th>
-                  <th>Message</th>
-                  <th>Actions</th>
+                  <th>
+                    <span class="d-flex gap-2 align-items-center">
+                      Name
+                      <i class="fa-solid fa-sort" onclick="nameFilter()"></i>
+                    </span>
+                  </th>
+                  <th>
+                    <span class="d-flex gap-2 align-items-center">
+                      Email
+                      <i class="fa-solid fa-sort" onclick="emailFilter()"></i>
+                    </span>
+                  </th>
+                  <th>
+                    <span class="d-flex gap-2 align-items-center">
+                      Phone
+                      <i class="fa-solid fa-sort" onclick="phoneFilter()"></i>
+                    </span>
+                  </th>
+                  <th>
+                    <span class="d-flex gap-2 align-items-center">
+                      Gender
+                      <i class="fa-solid fa-sort" onclick="genderFilter()"></i>
+                    </span>
+                  </th>
+                  <th>
+                    <span class="d-flex gap-2 align-items-center">
+                      Enquiry
+                      <i class="fa-solid fa-sort" onclick="enquiryFilter()"></i>
+                    </span>
+                  </th>
+                  <th>
+                    <span class="d-flex gap-2 align-items-center">
+                      Message
+                      <i class="fa-solid fa-sort" onclick="messageFilter()"></i>
+                    </span>
+                  </th>
+                  <th>
+                    <span class="d-flex gap-2 align-items-center">
+                      Actions <i class="fa-solid fa-sort"></i>
+                    </span>
+                  </th>
                 </tr>
               </thead>
+              <div class="loaderWrapper">
+                <div
+                  id="loader"
+                  class="spinner-border text-primary p-4"
+                  role="status"
+                >
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
               <tbody id="tbody" class="text-start">
                 <!-- <tr>
                     <td>Akash</td>
@@ -103,7 +147,11 @@
           </div>
           <div class="leftPart"></div>
         </div>
-        <div class="col-lg-3"></div>
+        <div class="col-lg-3 ps-3">
+          <div class="h6 fw-bold fs-5">Summary</div>
+          <div class="divider"></div>
+          <div class="summaryList d-flex flex-column"></div>
+        </div>
       </div>
 
       <!-- modal for create / Edit -->
@@ -166,7 +214,7 @@
                         type="radio"
                         name="gender"
                         id="male"
-                        value="male"
+                        value="Male"
                       />
                       <label class="form-check-label" for="male"> Male </label>
                     </div>
@@ -176,7 +224,7 @@
                         type="radio"
                         name="gender"
                         id="female"
-                        value="female"
+                        value="Female"
                       />
                       <label class="form-check-label" for="female">
                         Female
@@ -202,6 +250,13 @@
                     <option value="enquiry 23">enquiry 23</option>
                     <option value="enquiry 7">enquiry 7</option>
                     <option value="enquiry 16">enquiry 16</option>
+                    <option value="enquiry 3">enquiry 3</option>
+                    <option value="enquiry 10">enquiry 10</option>
+                    <option value="enquiry 21">enquiry 21</option>
+                    <option value="enquiry 19">enquiry 19</option>
+                    <option value="enquiry 33">enquiry 33</option>
+                    <option value="enquiry 4">enquiry 4</option>
+                    <option value="enquiry 40">enquiry 40</option>
                   </select>
                   <div
                     id="enquiryError"
