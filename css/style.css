@@ -1,0 +1,60 @@
+.enquirySection .fa-plus {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  color: white;
+  background-color: rgb(21, 176, 21);
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.enquirySection .fa-plus:is(:hover, :focus) {
+  background-color: rgb(15, 148, 15);
+}
+
+.enquirySection .fa-pen,
+.enquirySection .fa-trash {
+  width: 35px;
+  height: 35px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  color: white;
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.enquirySection .fa-pen {
+  color: green;
+}
+
+.enquirySection .fa-pen:is(:hover, :focus) {
+  background-color: rgb(194, 233, 194);
+}
+
+.enquirySection .fa-trash {
+  color: red;
+}
+
+.enquirySection .fa-trash:is(:hover, :focus) {
+  background-color: rgb(247, 198, 198);
+}
+
+.enquirySection table tr th {
+  font-weight: 500;
+  min-width: 110px;
+}
+.enquirySection table tr td {
+  font-size: 15px;
+  min-width: 110px;
+}
+
+.enquirySection .pagination .page-item .page-link:focus {
+  box-shadow: none !important;
+}
