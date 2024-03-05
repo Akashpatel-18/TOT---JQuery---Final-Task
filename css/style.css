@@ -1,3 +1,8 @@
+.enquirySection {
+  background-image: linear-gradient(45deg, #93a5cf 0%, #e4efe9 100%);
+  min-height: 100vh;
+}
+
 .enquirySection .fa-plus {
   width: 40px;
   height: 40px;
@@ -10,6 +15,12 @@
   font-size: 18px;
   cursor: pointer;
   transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.enquirySection .pageInput {
+  width: 120px;
+  margin-left: 10px;
 }
 
 .enquirySection .fa-plus:is(:hover, :focus) {
@@ -28,6 +39,7 @@
   background-color: white;
   cursor: pointer;
   transition: all 0.3s ease;
+  flex-shrink: 0;
 }
 
 .enquirySection .fa-pen {
@@ -46,6 +58,10 @@
   background-color: rgb(247, 198, 198);
 }
 
+.enquirySection table tbody {
+  background-color: #fff;
+}
+
 .enquirySection table tr th {
   font-weight: 500;
   min-width: 120px !important;
@@ -55,12 +71,16 @@
   min-width: 120px !important;
 }
 
+.enquirySection table tr .messageRow {
+  min-width: 200px !important;
+}
+
 .enquirySection .pagination .page-item .page-link:focus {
   box-shadow: none !important;
 }
 
 .enquirySection .divider {
-  width: 60%;
+  width: 30%;
   height: 1px;
   background-color: black;
   margin: 10px 0;
@@ -79,4 +99,59 @@
 
 .enquirySection .fa-sort {
   cursor: pointer;
+}
+
+.enquirySection .pagination li {
+  cursor: pointer;
+}
+
+.enquirySection .modal-header,
+.enquirySection .modal-footer {
+  background-color: #ecf0f1;
+}
+
+@media (max-width: 991px) {
+  .enquirySection table .messageRow {
+    min-width: 6000px !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .enquirySection table tr th {
+    font-weight: 500;
+    min-width: 120px !important;
+  }
+  .enquirySection table tr td {
+    font-size: 15px;
+    min-width: 120px !important;
+  }
+  .enquirySection table .messageRow {
+    min-width: 500px !important;
+  }
+}
+
+@media (max-width: 575px) {
+  .enquirySection .topHeader {
+    font-size: 20px !important;
+    padding: 15px 0;
+  }
+
+  .enquirySection .fa-plus {
+    width: 35px;
+    height: 35px;
+    display: flex;
+    font-size: 16px;
+  }
+
+  .enquirySection table tr th {
+    font-size: 14px;
+    min-width: 100px !important;
+  }
+  .enquirySection table tr td {
+    font-size: 14px;
+    min-width: 100px !important;
+  }
+  .enquirySection table .messageRow {
+    min-width: 350px !important;
+  }
 }

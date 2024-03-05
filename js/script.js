@@ -3,7 +3,7 @@ var currentSelectionId = 0;
 let currentData = [];
 let getDataBYid = {};
 let page = 1;
-let pageLimit = document.getElementById("pageInput").value;
+let pageLimit = document.querySelector(".pageInput").value;
 let paginationContent;
 var BaseUrl = new URL(
   "https://65e19ca3a8583365b316d3e2.mockapi.io/api/v1/CRUDDemo"
@@ -19,8 +19,16 @@ let totalFemaleEnquiries;
 let summaryApiData;
 let j = 1;
 let filterToggle = true;
+let modalClose = 0;
+let newData;
 
-$("#openModal").click(() => {
+getApiLength();
+
+$(".showStats").click(() => {
+  $("#summaryBox").slideToggle("slow");
+});
+
+$("#createModal").click(() => {
   $("#addLabel").text("Add Employee");
   $("#submitBtn")
     .removeClass("btn-success")
@@ -43,7 +51,11 @@ $(".btnClose").click(() => {
 $("#myForm").submit((e) => {
   e.preventDefault();
 
-  validateForm();
+  if (!Number(currentSelectionId)) {
+    validateForm();
+  } else {
+    isValid = true;
+  }
 
   if (
     isValid &&
@@ -67,15 +79,8 @@ $("#myForm").submit((e) => {
     }
 
     $("#myForm").trigger("reset");
+
     $("#staticBackdrop").modal("hide");
-    if (!currentSelectionId) {
-      $("#addLabel").text("Edit Employee");
-      $("#addLabel").text("Add Employee");
-      $("#submitBtn")
-        .removeClass("btn-success")
-        .addClass("btn-primary")
-        .text("Add");
-    }
   } else {
     return false;
   }
@@ -97,6 +102,8 @@ function getApiLength() {
     success: function (response) {
       $(".summaryList").html("");
       summaryApiData = response;
+
+      newData = response.map((x) => x).reverse();
 
       apiLength = summaryApiData.length;
       totalEnquiries = $("#enquiry > option").length - 1;
@@ -134,7 +141,6 @@ function getApiLength() {
     },
   });
 }
-getApiLength();
 
 function currentPage(index) {
   page = index;
@@ -170,16 +176,16 @@ function pagination() {
   lastPage = Math.ceil(apiLength / pageLimit);
   paginationContent = "";
   paginationContent += `
-        <nav aria-label="..." class="float-end">
-        <ul class="pagination">
+        <nav aria-label="..." class="paginate">
+        <ul class="pagination flex-wrap">
           <li class="prevBtn page-item" onclick=previousPage()>
             <a class="page-link" href="#"
               >Previous</a
             >
           </li>`;
   if (lastPage) {
-    for (let i = 1; i <= Math.ceil(apiLength / pageLimit); i++) {
-      paginationContent += `<li class="pageLink page-item" onclick=currentPage(${i}) ><a class="page-link" href="#">${i}</a></li>`;
+    for (let i = 1; i <= Math.ceil(apiLength / Number(pageLimit)); i++) {
+      paginationContent += `<li class="pageLink page-item" onclick=currentPage(${i}) ><a class="page-link" href="#" >${i}</a></li>`;
     }
   }
 
@@ -198,8 +204,10 @@ function pagination() {
     let firstPage = pageLinks[0];
     firstPage?.classList.add("active");
     prevBtn.classList.add("disabled");
+    prevBtn.style.cursor = "not-allowed";
   } else if (lastPage === page) {
     nextBtn.classList.add("disabled");
+    nextBtn.style.cursor = "not-allowed";
     pageLinks[pageLinks.length - 1].classList.add("active");
   } else {
     for (let i = 0; i < pageLinks.length; i++) {
@@ -212,31 +220,42 @@ function pagination() {
   getData();
 }
 
-document.getElementById("pageInput").addEventListener("change", (e) => {
-  pageLimit = e.target.value;
-  page = 1;
-  // setTimeout(() => {
-  pagination();
-  // }, 1500);
+document.querySelector(".pageInput").addEventListener("change", (e) => {
+  let pageLimitExceed = Number(e.target.value);
+  if (isNaN(pageLimitExceed)) {
+    let noFound = `<div class="text-center fw-bold fs-5 d-block mt-2 mb-2">No Record Found</div>`;
+    $("#tbody").html("");
+    $("#tbody").append(noFound);
+    $(".paginate").hide();
+    return;
+  }
+  if (pageLimitExceed > apiLength) {
+    let noFound = `<div class="text-center fw-bold fs-5 d-block mt-2 mb-2">No Record Found</div>`;
+    $("#tbody").html("");
+    $("#tbody").append(noFound);
+    $(".paginate").hide();
+  } else if (pageLimitExceed === 0) {
+    let noFound = `<div class="text-center fw-bold fs-5 d-block mt-2 mb-2">No Record Found</div>`;
+    $("#tbody").html("");
+    $("#tbody").append(noFound);
+    $(".paginate").hide();
+  } else if (pageLimitExceed === apiLength) {
+    pageLimit = pageLimitExceed;
+    page = 1;
+    pagination();
+    $(".paginate").hide();
+    return;
+  } else {
+    pageLimit = pageLimitExceed;
+    page = 1;
+    $(".paginate").show();
+    pagination();
+  }
 });
 
 const inputElement = document.getElementById("searchInput");
-// let previousValue = "";
-// inputElement.addEventListener("input", () => {
-//   previousValue = this.value;
-// });
-
-// inputElement.addEventListener("input", (e) => {
-//   let newValue = e.target.value;
-//   BaseUrl.searchParams.delete("search");
-
-//   BaseUrl.searchParams.append("search", newValue);
-//   getData();
-//   pagination();
-// });
 
 $("#searchInput").change(function () {
-  console.log($("#searchInput").val());
   BaseUrl.searchParams.delete("search");
 
   BaseUrl.searchParams.append("search", $("#searchInput").val());
@@ -244,10 +263,6 @@ $("#searchInput").change(function () {
   page = 1;
   pagination();
 });
-
-// $("#searchInput").focusout(function () {
-//   $(this).focus();
-// });
 
 function getData() {
   $.ajax({
@@ -264,7 +279,6 @@ function getData() {
     },
     success: function (response) {
       currentData = response;
-
       $("#tbody").html("");
 
       let noFound = `<div class="text-center fw-bold fs-5 d-block mt-2 mb-2">No Record Found</div>`;
@@ -274,19 +288,19 @@ function getData() {
         response.map((item) => {
           data += `
             <tr>
-            <td>${item.name}</td>
-            <td>${item.email}</td>
-            <td>${item.phone}</td>
-            <td>${item.gender}</td>
-            <td>${item.enquiry}</td>
-            <td>
+            <td class="nameRow">${item.name}</td>
+            <td class="emailRow">${item.email}</td>
+            <td class="phoneRow">${item.phone}</td>
+            <td class="genderRow">${item.gender}</td>
+            <td class="enquiryRow">${item.enquiry}</td>
+            <td class="messageRow">
             ${item.message}
             </td>
             <td>
               <span
                 class="d-flex align-items-center gap-2"
               >
-                <i class="fa-solid fa-pen box-shadow-xl" data-bs-toggle="modal"
+                <i id="editModal" class="fa-solid fa-pen box-shadow-xl" data-bs-toggle="modal"
                 data-bs-target="#staticBackdrop" onclick=patchData(${item.id})></i>
                 <i class="fa-solid fa-trash box-shadow-xl" data-bs-toggle="modal"
                 data-bs-target="#staticBackdrop2" onclick=removeData(${item.id})></i>
@@ -301,22 +315,24 @@ function getData() {
         getApiLength();
 
         if (response && response.length > 10) {
-          // setTimeout(() => {
           if (j > 0) {
-            pagination();
+            setTimeout(() => {
+              pagination();
+            }, 100);
+
             getApiLength();
             j -= 1;
           }
-          j += 1;
-
-          // }, 1000);
         }
       } else {
         $("#tbody").append(noFound);
       }
     },
     error: function (err) {
-      console.log(err);
+      let noFound = `<div class="text-center fw-bold fs-5 d-block mt-2 mb-2">No Record Found</div>`;
+      $("#tbody").html("");
+      $("#tbody").append(noFound);
+      $(".paginate").hide();
     },
   });
 }
@@ -512,7 +528,7 @@ function updateData() {
   });
 }
 
-function showModalHeader() {
+function modalHeader() {
   $("#addLabel").text("Edit Employee");
   $("#submitBtn")
     .removeClass("btn-primary")
@@ -525,7 +541,8 @@ function patchData(id) {
   if (getDataBYid) {
     currentSelectionId = getDataBYid.id;
 
-    showModalHeader();
+    modalHeader();
+
     $("#name").val(getDataBYid.name);
     $("#email").val(getDataBYid.email);
     $("#phone").val(getDataBYid.phone);
@@ -572,7 +589,7 @@ function deleteRecord(id) {
   });
 }
 
-// -----------------validation Using jquery-------------------
+// -----------------validation-------------------
 function validateForm() {
   let name = $("#name").val().trim();
   if (name === "") {
