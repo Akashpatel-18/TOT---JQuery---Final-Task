@@ -63,7 +63,7 @@ $("#myForm").submit((e) => {
     $("#email").val() !== "" &&
     $("#phone").val() !== "" &&
     $("input[type='radio'][name='gender']:checked").val() !== "" &&
-    $("#enquiry :selected").text() !== "" &&
+    $("#enquiry :selected").val() !== "" &&
     $("#message").val() !== "" &&
     $("#nameError").text() === "" &&
     $("#emailError").text() === "" &&
@@ -671,7 +671,7 @@ $("#gender").keyup(function () {
 });
 
 $("select#enquiry").change(function () {
-  var selectedEnquiry = $("#enquiry option:selected").text();
+  var selectedEnquiry = $("#enquiry option:selected").val();
   if (!selectedEnquiry) {
     $("#enquiryError").text("enquiry is required");
     isValid = false;
